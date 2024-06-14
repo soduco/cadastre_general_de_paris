@@ -15,3 +15,33 @@ You can merge all the files with:
 ```shell
 ogrmerge.py -single -f GPKG -o cadastre_general_paris_addresses.gpkg cadastre_general_paris_resultat/*/*.gpkg
 ```
+
+
+```shell
+ogr2ogr \
+  -sql "SELECT \
+    geom, \
+    CONCAT(\"NUMERO TXT\", ' ', NOM_NOTE) AS historical_name, \
+    CONCAT(\"NUMERO TXT\", ' ', NOM_NOTE, ', Paris') AS normalised_name, \
+    NULL AS specific_spatial_precision, \
+    'cadastre_general_paris' AS historical_source, \
+    'cadastre_general_paris' AS numerical_origin_process, \
+    CONCAT(NOM_NOTE, ', Paris') AS associated_normalised_rough_name, \
+    NUM_QUART AS quartier_numero, \
+    NUMEROTATI AS numerotation \
+    FROM merged WHERE \"EXP_GEO\" = 1" \
+  -f "PostgreSQL" PG:"host='geohistoricaldata.org' user='postgres' dbname='soduco' password='GHDB_987_admin'" \
+  cadastre_general_paris_addresses.gpkg \
+  -lco SCHEMA=geocoder_workspace \
+  -nln "cadastre_general_paris_1825_numbers_initial_import"
+```
+
+You can update the database to include the district names:
+```sql
+ALTER TABLE geocoder_workspace.cadastre_general_paris_1825_numbers_initial_import ADD COLUMN quartier text;
+
+UPDATE geocoder_workspace.cadastre_general_paris_1825_numbers_initial_import AS A 
+SET quartier = B."NOM_CADASTRE"
+FROM public.quartiers_cadastre AS B 
+WHERE A.quartier_numero = B."NUM_QUARTIER_CADASTRE";
+```
