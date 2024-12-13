@@ -21,14 +21,15 @@ ogrmerge.py -single -f GPKG -o cadastre_general_paris_addresses.gpkg cadastre_ge
 ogr2ogr \
   -sql "SELECT \
     geom, \
-    CONCAT(\"NUMERO TXT\", ' ', NOM_NOTE) AS historical_name, \
-    CONCAT(\"NUMERO TXT\", ' ', NOM_NOTE, ', Paris') AS normalised_name, \
+    CONCAT(\"NUMERO TXT\", ' ', NOM_SAISI) AS historical_name, \
+    CONCAT(\"NUMERO TXT\", ' ', NOM_SAISI, ', Paris') AS normalised_name, \
     NULL AS specific_spatial_precision, \
     'cadastre_general_paris' AS historical_source, \
     'cadastre_general_paris' AS numerical_origin_process, \
     CONCAT(NOM_NOTE, ', Paris') AS associated_normalised_rough_name, \
     NUM_QUART AS quartier_numero, \
-    NUMEROTATI AS numerotation \
+    NUMEROTATI AS numerotation, \
+    INTERP AS interpretation \
     FROM merged WHERE \"EXP_GEO\" = 1" \
   -f "PostgreSQL" PG:"host='geohistoricaldata.org' user='postgres' dbname='soduco' password='GHDB_987_admin'" \
   cadastre_general_paris_addresses.gpkg \
